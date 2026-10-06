@@ -1,0 +1,75 @@
+# ==========================================
+# GITIGNORE - SIMRS Mobile & REST API
+# ==========================================
+
+# 1. Dependensi Node.js / JavaScript
+node_modules/
+apps/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 2. Expo & React Native Build Artifacts
+.expo/
+apps/.expo/
+dist/
+apps/dist/
+web-build/
+apps/web-build/
+expo-env.d.ts
+apps/expo-env.d.ts
+.metro-health-check*
+*.tsbuildinfo
+
+# Folder native hasil prebuild CNG Expo (otomatis digenerate oleh Expo)
+ios/
+android/
+apps/ios/
+apps/android/
+
+# 3. Environment & Kredensial / Secret Keys
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+
+# 4. Editor, IDE & AI Configs
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+.claude/
+apps/.claude/
+
+# 5. File Sistem Operasi (Windows & macOS)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+
+# 6. File Log & Temporary / Scratch
+*.log
+scratch/
+*.tmp
+*.bak
