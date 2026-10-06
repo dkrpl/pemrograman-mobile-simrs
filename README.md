@@ -32,36 +32,37 @@ Sebelum melakukan instalasi, pastikan perangkat Anda telah terpasang:
 
 ## 🚀 Panduan Setup & Instalasi Cepat
 
-### Langkah 1: Clone Repository
-Buka terminal dan clone repository ini:
+### Langkah 1: Clone Repository ke Folder `htdocs` (Sangat Direkomendasikan)
+
+Web server Apache pada XAMPP secara default membaca dan melayani file dari folder `htdocs`. Oleh karena itu, **sangat disarankan** untuk meng-clone project ini langsung ke dalam direktori `htdocs` XAMPP Anda agar API langsung siap diakses tanpa konfigurasi tambahan:
+
 ```bash
-git clone <URL_REPOSITORY_ANDA>
+# 1. Buka terminal dan masuk ke folder htdocs XAMPP Anda
+cd C:\xampp\htdocs
+
+# 2. Clone repository ke dalam folder api-simrs
+git clone <URL_REPOSITORY_ANDA> api-simrs
+
+# 3. Masuk ke folder project
 cd api-simrs
 ```
 
----
-
-### Langkah 2: Hubungkan Project ke XAMPP Apache
-
-Agar API dapat diakses melalui `http://localhost/api-simrs/`, hubungkan folder project ke direktori `htdocs` XAMPP:
-
 > [!TIP]
-> **Jika Anda menggunakan Windows PowerShell (tanpa perlu hak Administrator):**
-> ```powershell
-> New-Item -ItemType Junction -Path "C:\xampp\htdocs\api-simrs" -Target (Get-Location)
-> ```
-> *(Ganti `C:\xampp` dengan lokasi instalasi XAMPP Anda, misalnya `C:\xampp2`)*
-
-Atau jika menggunakan **Command Prompt (CMD)**:
-```cmd
-mklink /J "C:\xampp\htdocs\api-simrs" "%cd%"
-```
-
-*Alternatif lain: Anda juga bisa langsung meletakkan hasil clone folder `api-simrs` di dalam `C:\xampp\htdocs\`.*
+> **Alternatif: Jika Ingin Meletakkan Project di Luar `htdocs` (Misal Drive D:)**  
+> Jika Anda lebih suka menyimpan file proyek di drive lain (misalnya `D:\Kuliah\project-mobile\api-simrs`), Anda tetap bisa melakukannya. Cukup hubungkan folder tersebut ke `htdocs` menggunakan *Directory Junction* (pintu masuk virtual) sekali saja:
+> - **Windows PowerShell:**
+>   ```powershell
+>   New-Item -ItemType Junction -Path "C:\xampp\htdocs\api-simrs" -Target (Get-Location)
+>   ```
+> - **Command Prompt (CMD):**
+>   ```cmd
+>   mklink /J "C:\xampp\htdocs\api-simrs" "%cd%"
+>   ```
+> *(Sesuaikan `C:\xampp` dengan lokasi instalasi XAMPP Anda jika berbeda, misal `C:\xampp2`).*
 
 ---
 
-### Langkah 3: Setup & Migrasi Database
+### Langkah 2: Setup & Migrasi Database
 
 1. Buka **XAMPP Control Panel**, lalu klik **Start** pada modul **Apache** dan **MySQL**.
 2. Buka terminal di folder utama `api-simrs`, lalu jalankan migrasi database otomatis:
@@ -81,7 +82,7 @@ mklink /J "C:\xampp\htdocs\api-simrs" "%cd%"
 
 ---
 
-### Langkah 4: Setup & Menjalankan Frontend Mobile (Expo)
+### Langkah 3: Setup & Menjalankan Frontend Mobile (Expo)
 
 1. Masuk ke direktori `apps`:
    ```bash
