@@ -222,15 +222,32 @@ api-simrs/
 
 ## ❓ Pemecahan Masalah (Troubleshooting)
 
-1. **`Network request failed` / `Failed to fetch` saat membuka aplikasi mobile:**
-   - Pastikan modul **Apache** di XAMPP berstatus **Running**.
-   - Jika dijalankan di browser, buka `http://localhost/api-simrs/poli/index.php` untuk memastikan API merespon JSON dengan baik.
+1. **Error PowerShell: `npm.ps1 cannot be loaded because running scripts is disabled on this system (PSSecurityException)`:**
+   - **Penyebab:** Windows PowerShell secara default membatasi eksekusi script.
+   - **Solusi Cepat:** Buka PowerShell dan jalankan perintah berikut (tidak memerlukan hak Administrator):
+     ```powershell
+     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+     ```
+     Pilih `Y` (Yes) saat konfirmasi, lalu jalankan kembali `npm install`.
+   - **Solusi Alternatif:** Gunakan **Command Prompt (CMD)** biasa atau panggil `npm.cmd install`.
+
+2. **Error Browser: `net::ERR_FAILED 404 (Not Found)` & `blocked by CORS policy`:**
+   - **Penyebab:** Frontend mencoba mengakses `http://localhost/api-simrs/...`, namun folder proyek di dalam `C:\xampp\htdocs\` tidak bernama `api-simrs` (misalnya folder dinamai `pemrograman-mobile`). Karena folder tidak ditemukan, Apache mengirim error 404 tanpa header CORS.
+   - **Solusi Opsi A (Direkomendasikan):** Ubah nama folder di dalam `C:\xampp\htdocs\` menjadi persis `api-simrs`.
+   - **Solusi Opsi B:** Jika ingin tetap memakai nama folder lain (misal `pemrograman-mobile`), buka file `apps/src/config/api.js` lalu ubah URL path-nya:
+     ```javascript
+     export const BASE_URL = `http://${HOST}${APACHE_PORT}/pemrograman-mobile`;
+     ```
+   - **Verifikasi:** Buka browser dan kunjungi `http://localhost/api-simrs/poli/index.php`. Jika muncul respon JSON, maka API sudah terhubung dengan benar.
+
+3. **`Network request failed` / `Failed to fetch` saat membuka aplikasi mobile:**
+   - Pastikan modul **Apache** dan **MySQL** di XAMPP berstatus **Running** (indikator berwarna hijau).
    - Jika menggunakan smartphone fisik dengan Expo Go, pastikan `USE_REAL_DEVICE = true` di `apps/src/config/api.js` dan PC serta smartphone berada pada satu jaringan Wi-Fi yang sama.
 
-2. **Koneksi Database Gagal:**
+4. **Koneksi Database Gagal:**
    - Pastikan modul **MySQL** di XAMPP berstatus **Running**.
    - Jika MySQL memakai port non-standar (misal 3307) atau memiliki password root, konfigurasi di `config/database.php` otomatis mencoba menghubungkan ke port 3306 dan 3307. Anda juga dapat mengatur Environment Variable `DB_PORT`, `DB_USER`, dan `DB_PASS`.
 
-3. **Dependensi npm Error:**
+5. **Dependensi npm Error:**
    - Jalankan `npx expo-doctor` di dalam folder `apps/` untuk memverifikasi keselarasan paket.
    - Jalankan `npx expo install --fix` bila terdapat versi paket yang tidak sesuai.
