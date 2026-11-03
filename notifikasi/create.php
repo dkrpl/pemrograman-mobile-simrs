@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 // Preflight CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -47,5 +48,5 @@ try {
         'status_baca' => $status_baca
     ], 201);
 } catch (PDOException $e) {
-    sendResponse('error', 'Gagal menyimpan data notifikasi: ' . $e->getMessage(), null, 500);
+    sendDbError($e, 'menyimpan data notifikasi');
 }

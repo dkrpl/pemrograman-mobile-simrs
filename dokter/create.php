@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 // Preflight CORS: balas lalu hentikan eksekusi
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -36,7 +37,7 @@ if ($nama === '') {
 try {
     $pdo  = getConnection();
     $stmt = $pdo->prepare("INSERT INTO dokter (nama, spesialisasi, no_sip) VALUES (?, ?, ?)");
-    $stmt->execute([$nama, $spesialisasi, $no_sip]);
+    $stmt->execute([$nama, $spesialisasi, $no_sip !== '' ? $no_sip : null]);
 
     sendResponse('success', 'Data Dokter Berhasil Ditambahkan', [
         'id'            => $pdo->lastInsertId(),
@@ -45,5 +46,5 @@ try {
         'no_sip'        => $no_sip
     ], 201);
 } catch (PDOException $e) {
-    sendResponse('error', 'Gagal menyimpan data', null, 500);
+    sendDbError($e, 'menyimpan data dokter');
 }

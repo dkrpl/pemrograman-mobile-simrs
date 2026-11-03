@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 
 $id     = $_GET['id'] ?? null;
@@ -24,8 +25,12 @@ if (!$cek->fetch()) {
 }
 
 
-$stmt   = $pdo->prepare("UPDATE dokter SET nama=?,spesialisasi=?,no_sip=? WHERE id=?");
-$stmt->execute([$nama, $spesialisasi, $no_sip, $id]);
+try {
+    $stmt = $pdo->prepare("UPDATE dokter SET nama=?,spesialisasi=?,no_sip=? WHERE id=?");
+    $stmt->execute([$nama, $spesialisasi, $no_sip !== '' && $no_sip !== null ? $no_sip : null, $id]);
+} catch (PDOException $e) {
+    sendDbError($e, 'memperbarui data dokter');
+}
 
 sendResponse('success', 'Data Dokter Berhasil diperbarui', [
     'id'            => $id,

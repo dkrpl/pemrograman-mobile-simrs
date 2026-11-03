@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 
 $id         = $_GET['id'] ?? null;
@@ -22,8 +23,12 @@ if (!$cek->fetch()) {
 }
 
 
-$stmt   = $pdo->prepare("DELETE FROM poli WHERE id=?");
-$stmt->execute([$id]);
+try {
+    $stmt = $pdo->prepare("DELETE FROM poli WHERE id=?");
+    $stmt->execute([$id]);
+} catch (PDOException $e) {
+    sendDbError($e, 'menghapus data');
+}
 
 sendResponse('success', 'Data Poli Berhasil dihapus', [
     'id'        => $id

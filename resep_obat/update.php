@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 // Preflight CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -54,5 +55,5 @@ try {
         'jumlah'         => $jumlah
     ], 200);
 } catch (PDOException $e) {
-    sendResponse('error', 'Gagal memperbarui data resep obat: ' . $e->getMessage(), null, 500);
+    sendDbError($e, 'memperbarui data resep obat');
 }

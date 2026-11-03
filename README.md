@@ -6,15 +6,17 @@ Sistem Informasi Manajemen Rumah Sakit (SIMRS) berbasis **RESTful API (PHP Nativ
 
 ## 📋 Daftar Fitur
 
-- 📊 **Dashboard Utama:** Ringkasan statistik data (Poli, Dokter, Pasien, Jadwal) dan indikator status koneksi API secara *real-time*.
+- 📊 **Dashboard Utama:** Rekap antrean hari ini (menunggu/dipanggil/selesai/batal), jumlah data per modul, dan indikator status koneksi API.
 - 🏥 **Master Data Poliklinik:** Operasi CRUD, pencarian poli, validasi nama minimal 3 karakter.
 - 👨‍⚕️ **Master Data Dokter:** Operasi CRUD data dokter, spesialisasi, dan nomor SIP.
 - 👥 **Master Data Pasien:** Pendaftaran pasien, pencarian nomor RM, validasi NIK 16 digit, dan identitas lengkap.
-- 📅 **Jadwal Praktik Dokter:** Informasi jadwal dokter per poliklinik, jam operasional, dan kuota pasien.
-- 📋 **Pendaftaran & Antrean:** Manajemen antrean per tanggal kunjungan beserta status (*menunggu, dipanggil, selesai, batal*).
-- 🩺 **Rekam Medis & Resep Obat:** Pencatatan diagnosa klinis dan pengelolaan resep obat pasien.
-- 🔐 **Sistem Autentikasi:** Endpoint registrasi dan login dengan enkripsi password (Bcrypt) dan API token.
-- 🔔 **Notifikasi & FCM Token:** Pengelolaan pesan notifikasi dan penyimpanan token perangkat.
+- 📅 **Jadwal Praktik Dokter:** CRUD jadwal dokter per poliklinik, validasi hari & jam (HH:MM), serta kuota pasien.
+- 📋 **Pendaftaran & Antrean:** Nomor antrean otomatis, cek kuota jadwal, ubah status sekali tekan (*menunggu → dipanggil → selesai / batal*), dan peringatan bila tanggal tidak sesuai hari praktik.
+- 🩺 **Rekam Medis:** Tombol **Periksa** di antrean langsung membuka form rekam medis; antrean otomatis ditandai *selesai*.
+- 💊 **Resep Obat:** Resep per rekam medis (data anak) maupun daftar seluruh resep.
+- 🔐 **Data User & Autentikasi:** CRUD akun (admin/dokter/pasien) dengan password Bcrypt, serta endpoint login/register dengan API token.
+- 🔔 **Notifikasi & FCM Token:** Kirim notifikasi ke user, tandai dibaca/belum, dan simpan token perangkat.
+- 🔎 **Pencarian & Validasi:** Kotak pencarian di setiap daftar, validasi form di aplikasi dan server, serta pesan error yang jelas (mis. data tidak bisa dihapus karena masih dipakai, NIK/email duplikat).
 
 ---
 
@@ -156,33 +158,73 @@ Seluruh respon API berformat JSON standar:
 | :---: | :--- | :--- | :--- |
 | `GET` | `/pasien/index.php` | - | Ambil semua pasien |
 | `GET` | `/pasien/index.php?id={no_rm}` | `id` | Cari pasien berdasarkan Nomor RM |
-| `POST` | `/pasien/create.php` | `{"nama": "...", "nik": "...", "no_rm": "...", ...}` | Tambah data pasien |
+| `POST` | `/pasien/create.php` | `{"user_id": 3, "nik": "16 digit", "no_rm": "...", "nama": "...", "tgl_lahir": "YYYY-MM-DD", "jenis_kelamin": "L/P", "alamat": "..."}` | Tambah data pasien (1 user = 1 pasien) |
 | `POST` | `/pasien/update.php` | Query / Form | Ubah data pasien |
 | `POST` | `/pasien/delete.php?id={id}` | `id` | Hapus pasien |
 
 ### 5. Jadwal Praktik (`jadwal_praktik/`)
 | Method | Endpoint | Keterangan |
 | :---: | :--- | :--- |
-| `GET` | `/jadwal_praktik/index.php` | Ambil seluruh jadwal (JOIN dokter & poli) |
-| `POST` | `/jadwal_praktik/create.php` | Tambah jadwal (`dokter_id`, `poli_id`, `hari`, dll) |
-| `POST` | `/jadwal_praktik/update.php` | Ubah jadwal praktik |
-| `POST` | `/jadwal_praktik/delete.php?id={id}` | Hapus jadwal praktik |
+| `GET` | `/jadwal_praktik/index.php` | Seluruh jadwal (JOIN dokter & poli), opsional filter `?poli_id=`, `?dokter_id=`, `?hari=` |
+| `GET` | `/jadwal_praktik/index.php?id={id / nama poli}` | Cari satu jadwal |
+| `POST` | `/jadwal_praktik/create.php` | Tambah jadwal (`dokter_id`, `poli_id`, `hari`, `jam_mulai`, `jam_selesai`, `kuota`) |
+| `POST` | `/jadwal_praktik/update.php?id={id}` | Ubah jadwal (query string atau JSON body) |
+| `POST` | `/jadwal_praktik/delete.php?id={id}` | Hapus jadwal (ditolak bila sudah dipakai pendaftaran) |
 
 ### 6. Pendaftaran Antrean (`pendaftaran/`)
 | Method | Endpoint | Keterangan |
 | :---: | :--- | :--- |
-| `GET` | `/pendaftaran/index.php` | Ambil seluruh antrean pendaftaran |
-| `POST` | `/pendaftaran/create.php` | Buat pendaftaran antrean baru |
-| `POST` | `/pendaftaran/update.php` | Ubah pendaftaran / status antrean |
-| `POST` | `/pendaftaran/delete.php?id={id}` | Batalkan pendaftaran |
+| `GET` | `/pendaftaran/index.php` | Seluruh antrean, opsional `?tanggal=YYYY-MM-DD` atau `?pasien_id=` |
+| `POST` | `/pendaftaran/create.php` | Daftar antrean baru (`pasien_id`, `jadwal_id`, `tanggal_kunjungan`); no. antrean & kuota dicek otomatis |
+| `POST` | `/pendaftaran/update.php?id={id}` | Ubah pendaftaran; cukup kirim `status` untuk ganti status saja |
+| `POST` | `/pendaftaran/delete.php?id={id}` | Hapus pendaftaran |
 
-### 7. Rekam Medis & Resep Obat
+### 7. Rekam Medis (`rekam_medis/`)
 | Method | Endpoint | Keterangan |
 | :---: | :--- | :--- |
-| `GET` | `/rekam_medis/index.php` | Daftar rekam medis pasien |
-| `POST` | `/rekam_medis/create.php` | Tambah rekam medis |
-| `GET` | `/resep_obat/index.php` | Daftar resep obat |
-| `POST` | `/resep_obat/create.php` | Tambah resep obat |
+| `GET` | `/rekam_medis/index.php` | Seluruh rekam medis, opsional `?pasien_id=` atau `?pendaftaran_id=` |
+| `POST` | `/rekam_medis/create.php` | Tambah (`pendaftaran_id`, `dokter_id`, `diagnosa`, `catatan`); antrean otomatis *selesai* |
+| `POST` | `/rekam_medis/update.php?id={id}` | Ubah rekam medis |
+| `POST` | `/rekam_medis/delete.php?id={id}` | Hapus rekam medis (resep ikut terhapus) |
+
+### 8. Resep Obat (`resep_obat/`)
+| Method | Endpoint | Keterangan |
+| :---: | :--- | :--- |
+| `GET` | `/resep_obat/index.php` | Seluruh resep, opsional `?rekam_medis_id=` |
+| `POST` | `/resep_obat/create.php` | Tambah resep (`rekam_medis_id`, `nama_obat`, `dosis`, `jumlah`) |
+| `POST` | `/resep_obat/update.php?id={id}` | Ubah resep |
+| `POST` | `/resep_obat/delete.php?id={id}` | Hapus resep |
+
+### 9. Data User (`users/`)
+| Method | Endpoint | Keterangan |
+| :---: | :--- | :--- |
+| `GET` | `/users/index.php` | Seluruh user (tanpa password & token), opsional `?role=pasien` |
+| `GET` | `/users/index.php?id={id / nama / email}` | Cari satu user |
+| `POST` | `/users/create.php` | Tambah user (`nama`, `email`, `password` min. 6, `role`) |
+| `POST` | `/users/update.php?id={id}` | Ubah user; `password` kosong = tidak diubah |
+| `POST` | `/users/delete.php?id={id}` | Hapus user (ditolak bila masih terhubung ke data pasien) |
+
+### 10. Notifikasi (`notifikasi/`)
+| Method | Endpoint | Keterangan |
+| :---: | :--- | :--- |
+| `GET` | `/notifikasi/index.php` | Seluruh notifikasi, opsional `?user_id=` |
+| `POST` | `/notifikasi/create.php` | Kirim notifikasi (`user_id`, `judul`, `pesan`) |
+| `POST` | `/notifikasi/update.php?id={id}` | Ubah notifikasi; mis. kirim `status_baca=1` saja untuk tandai dibaca |
+| `POST` | `/notifikasi/delete.php?id={id}` | Hapus notifikasi |
+
+### 11. Token Perangkat (`token_device/`)
+| Method | Endpoint | Keterangan |
+| :---: | :--- | :--- |
+| `GET` | `/token_device/index.php` | Seluruh token, opsional `?user_id=` |
+| `POST` | `/token_device/save.php` | Simpan / perbarui token FCM (`user_id`, `fcm_token`) |
+| `POST` | `/token_device/delete.php?user_id={id}` | Hapus token perangkat user (mis. saat logout) |
+
+### 12. Dashboard (`dashboard/`)
+| Method | Endpoint | Keterangan |
+| :---: | :--- | :--- |
+| `GET` | `/dashboard/index.php` | Jumlah data per modul + rekap status antrean hari ini |
+
+> **Catatan:** Semua endpoint `update.php` menerima data lewat *query string* maupun *JSON body*. Kode HTTP `409` dipakai untuk data duplikat atau data yang masih dipakai relasi lain.
 
 ---
 
@@ -192,10 +234,12 @@ Seluruh respon API berformat JSON standar:
 api-simrs/
 ├── apps/                          # Frontend React Native (Expo)
 │   ├── src/
+│   │   ├── components/            # makeListScreen & makeFormScreen (pembuat layar CRUD generik)
 │   │   ├── config/api.js          # Pengaturan URL Host & IP backend
-│   │   ├── screens/               # Layar aplikasi (Home, Poli, Dokter, Pasien, dll)
-│   │   ├── services/              # Modul fetch HTTP API
-│   │   └── utils/dialog.js        # Helper dialog lintas platform (Web & Mobile)
+│   │   ├── screens/               # Layar aplikasi; entityScreens.js berisi konfigurasi
+│   │   │                          #   Jadwal, Pendaftaran, Rekam Medis, Resep, User, Notifikasi
+│   │   ├── services/              # crudService.js (CRUD generik), apis.js, + service Poli/Dokter/Pasien
+│   │   └── utils/                 # dialog.js (Web & Mobile), validators.js
 │   ├── App.js                     # Root navigator aplikasi
 │   └── package.json               # Dependensi Expo & React Native
 ├── auth/                          # Endpoint Login & Register
@@ -203,8 +247,10 @@ api-simrs/
 │   └── database.php               # Koneksi PDO multi-environment (auto fallback)
 ├── db/
 │   └── api_rs.sql                 # Skema basis data SQL (MariaDB & MySQL)
+├── dashboard/                     # REST API ringkasan statistik
 ├── dokter/                        # REST API modul Dokter
 ├── helpers/
+│   ├── request.php                # Helper CORS, input (query + JSON), & error database
 │   └── response.php               # Helper format respon JSON
 ├── jadwal_praktik/                # REST API modul Jadwal Praktik
 ├── notifikasi/                    # REST API modul Notifikasi
@@ -214,6 +260,7 @@ api-simrs/
 ├── rekam_medis/                   # REST API modul Rekam Medis
 ├── resep_obat/                    # REST API modul Resep Obat
 ├── token_device/                  # REST API modul Token Perangkat (FCM)
+├── users/                         # REST API modul Data User
 ├── migrate.php                    # Script migrasi & seeder otomatis
 └── README.md                      # Dokumentasi proyek
 ```

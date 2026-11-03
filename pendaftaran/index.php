@@ -20,18 +20,22 @@ $baseSelect = "SELECT
     pas.nama as nama_pasien,
     pas.no_rm,
     pas.nik,
+    jp.dokter_id,
+    jp.poli_id,
+    rm.id as rekam_medis_id,
     d.nama as nama_dokter,
     d.spesialisasi,
     pol.nama_poli,
     pol.lokasi,
     jp.hari,
-    jp.jam_mulai,
-    jp.jam_selesai
+    TIME_FORMAT(jp.jam_mulai, '%H:%i') as jam_mulai,
+    TIME_FORMAT(jp.jam_selesai, '%H:%i') as jam_selesai
 FROM pendaftaran pd
 LEFT JOIN pasien pas ON pd.pasien_id = pas.id
 LEFT JOIN jadwal_praktik jp ON pd.jadwal_id = jp.id
 LEFT JOIN dokter d ON jp.dokter_id = d.id
-LEFT JOIN poli pol ON jp.poli_id = pol.id";
+LEFT JOIN poli pol ON jp.poli_id = pol.id
+LEFT JOIN rekam_medis rm ON rm.pendaftaran_id = pd.id";
 
 if ($id) {
     $stmt = $pdo->prepare("$baseSelect WHERE pd.id = ?");

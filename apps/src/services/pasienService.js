@@ -30,7 +30,7 @@ export const createPasien = (data) =>
 // UPDATE
 export const updatePasien = (data) =>
   request(
-    `${BASE_URL}/pasien/update.php?id=${data.id}&user_id=${data.user_id || 1}&nik=${q(data.nik)}&no_rm=${q(data.no_rm)}&nama=${q(data.nama)}&tgl_lahir=${q(data.tgl_lahir)}&jenis_kelamin=${q(data.jenis_kelamin)}&alamat=${q(data.alamat || '')}`,
+    `${BASE_URL}/pasien/update.php?id=${data.id}&user_id=${data.user_id}&nik=${q(data.nik)}&no_rm=${q(data.no_rm)}&nama=${q(data.nama)}&tgl_lahir=${q(data.tgl_lahir)}&jenis_kelamin=${q(data.jenis_kelamin)}&alamat=${q(data.alamat || '')}`,
     { method: 'POST' }
   );
 

@@ -18,6 +18,9 @@ sendResponse('success', 'API SIMRS Backend Berjalan dengan Baik', [
         'rekam_medis'    => '/rekam_medis/index.php',
         'resep_obat'     => '/resep_obat/index.php',
         'notifikasi'     => '/notifikasi/index.php',
+        'users'          => '/users/index.php',
+        'token_device'   => '/token_device/index.php, /token_device/save.php',
+        'dashboard'      => '/dashboard/index.php',
         'migration'      => '/migrate.php'
     ]
 ]);

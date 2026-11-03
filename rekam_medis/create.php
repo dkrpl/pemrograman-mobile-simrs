@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once '../config/database.php';
 require_once '../helpers/response.php';
+require_once '../helpers/request.php';
 
 // Preflight CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -39,9 +40,13 @@ try {
     $pdo  = getConnection();
     $stmt = $pdo->prepare("INSERT INTO rekam_medis (pendaftaran_id, dokter_id, diagnosa, catatan, tanggal) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([$pendaftaran_id, $dokter_id, $diagnosa, $catatan, $tanggal]);
+    $rekamMedisId = $pdo->lastInsertId();
+
+    // Pasien sudah diperiksa: tandai antrean pendaftaran sebagai selesai
+    $pdo->prepare("UPDATE pendaftaran SET status = 'selesai' WHERE id = ?")->execute([$pendaftaran_id]);
 
     sendResponse('success', 'Data Rekam Medis Berhasil Ditambahkan', [
-        'id'             => $pdo->lastInsertId(),
+        'id'             => $rekamMedisId,
         'pendaftaran_id' => $pendaftaran_id,
         'dokter_id'      => $dokter_id,
         'diagnosa'       => $diagnosa,
@@ -49,5 +54,5 @@ try {
         'tanggal'        => $tanggal
     ], 201);
 } catch (PDOException $e) {
-    sendResponse('error', 'Gagal menyimpan data rekam medis: ' . $e->getMessage(), null, 500);
+    sendDbError($e, 'menyimpan data rekam medis');
 }
